@@ -1,0 +1,15 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Drogon Master Service</display-name>
+   <servlet>
+      <servlet-name>DrogonLogger</servlet-name>
+      <servlet-class>org.joemonti.drogon.DrogonLoggerServlet</servlet-class>
+   </servlet>
+   <servlet-mapping>
+      <servlet-name>DrogonLogger</servlet-name>
+      <url-pattern>/logger</url-pattern>
+   </servlet-mapping>
+</web-app>

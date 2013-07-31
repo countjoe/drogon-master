@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+<meta charset="utf-8">
+<script type="text/javascript" src="d3.v3.js"></script>
+<script type="text/javascript">
+var HD_LOGGER_URL = "ws://" + location.host + "/drogon-master/logger";
+
+var DEBUG=false;
+
+var WIDTH = 1024;
+var HEIGHT = 600;
+var MAX_BARS = 10;
+
+var BAR_WIDTH=30;
+var BAR_HEIGHT=100;
+
+var BG_COLOR="#333333";
+var LINE_COLOR="#28c928";
+var TEXT_COLOR="#33ff33";
+var LEVEL_RGB="51,255,51";
+var BAR_BG_COLOR="#4b614b";
+var BAR_CENTER_COLOR="#242f24";
+//var BG_COLOR="#37485e";
+//var LINE_COLOR="#eaf0f6";
+//var LEVEL_RGB="255,176,117";
+
+var RADIO_AXIS_SIZE=100;
+
+var svg;
+var bars = [];
+var radioAxis = [];
+
+function start() {
+  if(navigator.userAgent.match(/Android/i)){
+    window.scrollTo(0,1);
+  }
+  start_draw();
+  start_data();
+}
+
+function start_draw() {
+  svg = d3.select("body")
+        .append("svg")
+        .attr("width", WIDTH)
+        .attr("height", HEIGHT);
+  
+  svg.append("rect")
+      .attr("width", WIDTH)
+      .attr("height", HEIGHT)
+      .attr("fill", BG_COLOR)
+      .attr("stroke", "#273341")
+      .attr("stroke-width", 2);
+  
+  create_3axis( "Gyroscope", 50, 20 );
+  create_3axis( "Accelerometer", 50, 180 );
+
+  create_radio( 50, 340 );
+}
+
+function create_3axis( title, top, left ) {
+  svg.append("text")
+      .attr("x", left+54)
+      .attr("y", top-26)
+      .attr("fill", TEXT_COLOR)
+      .attr("text-anchor", "middle")
+      .attr("style","font-size:10pt;font-family:monospace")
+      .text(title);
+ 
+  svg.append("line")
+      .attr("x1", left-10)
+      .attr("y1", top-20)
+      .attr("x2", left+116)
+      .attr("y2", top-20)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+ 
+  svg.append("line")
+      .attr("x1", left-10)
+      .attr("y1", top-20)
+      .attr("x2", left-10)
+      .attr("y2", top-12)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+ 
+  svg.append("line")
+      .attr("x1", left+116)
+      .attr("y1", top-20)
+      .attr("x2", left+116)
+      .attr("y2", top-12)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+  bars.push( create_bar( { 'label': 'X', 'top' : top, 'left' : left } ) );
+  bars.push( create_bar( { 'label': 'Y', 'top' : top, 'left' : left+40 } ) );
+  bars.push( create_bar( { 'label': 'Z', 'top' : top, 'left' : left+80 } ) );
+}
+
+function create_bar( attrs ) {
+  var top = attrs['top'];
+  var left = attrs['left'];
+  
+  // value text
+  var valueText = svg.append("text")
+      .attr("x", left + Math.floor(BAR_WIDTH/2) - 1)
+      .attr("y", top-4)
+      .attr("fill", TEXT_COLOR)
+      .attr("text-anchor", "middle")
+      .attr("style","font-size:10pt;font-family:monospace")
+      .text(attrs['label']);
+  
+  // main bar rectangle
+  svg.append("rect") 
+      .attr("width", BAR_WIDTH-2)
+      .attr("height", BAR_HEIGHT-2)
+      .attr("x", left)
+      .attr("y", top)
+      .attr("fill", BAR_BG_COLOR)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1)
+ 
+  // left center line
+  svg.append("line")
+      .attr("x1", left-5)
+      .attr("y1", top+1+((BAR_HEIGHT-2)/2))
+      .attr("x2", left)
+      .attr("y2", top+1+((BAR_HEIGHT-2)/2))
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+
+  // right center line
+  svg.append("line")
+      .attr("x1", left + BAR_WIDTH - 2)
+      .attr("y1", top+1+((BAR_HEIGHT-2)/2))
+      .attr("x2", left + BAR_WIDTH + 3)
+      .attr("y2", top+1+((BAR_HEIGHT-2)/2))
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+  // center
+  svg.append("line")
+      .attr("x1", left + 1)
+      .attr("y1", top+1+((BAR_HEIGHT-2)/2))
+      .attr("x2", left + BAR_WIDTH - 3)
+      .attr("y2", top+1+((BAR_HEIGHT-2)/2))
+      .attr("stroke", BAR_CENTER_COLOR)
+      .attr("stroke-width", 1);
+
+  // left top-half line
+  svg.append("line")
+      .attr("x1", left-3)
+      .attr("y1", Math.floor(top+1+((BAR_HEIGHT-2)/4)))
+      .attr("x2", left)
+      .attr("y2", Math.floor(top+1+((BAR_HEIGHT-2)/4)))
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+
+  // right top-half line
+  svg.append("line")
+      .attr("x1", left + BAR_WIDTH - 2)
+      .attr("y1", Math.floor(top+1+((BAR_HEIGHT-2)/4)))
+      .attr("x2", left + BAR_WIDTH + 1)
+      .attr("y2", Math.floor(top+1+((BAR_HEIGHT-2)/4)))
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+
+  // left bottom-half line
+  svg.append("line")
+      .attr("x1", left-3)
+      .attr("y1", Math.floor(top+1+((BAR_HEIGHT-2)*3/4)))
+      .attr("x2", left)
+      .attr("y2", Math.floor(top+1+((BAR_HEIGHT-2)*3/4)))
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+  // right bottom-half line
+  svg.append("line")
+      .attr("x1", left + BAR_WIDTH - 2)
+      .attr("y1", Math.floor(top+1+((BAR_HEIGHT-2)*3/4)))
+      .attr("x2", left + BAR_WIDTH + 1)
+      .attr("y2", Math.floor(top+1+((BAR_HEIGHT-2)*3/4)))
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+  // value lines (at decreasing alphas) for t, t-1, t-2, t-3, ... t-(MAX_BARS-1) 
+  var levels = [];
+  add_level( levels, 0, top, left, 1.0 );
+  var alpha = 0.5;
+  for ( var i = 1; i < MAX_BARS; i++ ) {
+    add_level( levels, i, top, left, alpha );
+    alpha /= 1.15;
+  }
+  
+  // value text
+  var valueText = svg.append("text")
+      .attr("x", left + BAR_WIDTH - 8)
+      .attr("y", top + BAR_HEIGHT + 13)
+      .attr("fill", TEXT_COLOR)
+      .attr("text-anchor", "end")
+      .attr("style","font-size:10pt;font-family:monospace")
+      .text("34");
+  
+  var values = [];
+  var valuesIndex = 0;
+
+  for ( var i = 0; i < MAX_BARS; i++ ) {
+    values.push( -1 );
+  }
+  
+  return { 
+    'attrs' : attrs, 
+    'levels' : levels, 
+    'valueText' : valueText,
+    'values' : values,
+    'valuesIndex' : 0
+  };
+}
+
+function add_level( levels, id, top, left, alpha ) {
+  levels.push( svg.append("line")
+      .attr("class", "level")
+      .attr("id", "level-" + id)
+      .attr("x1", left)
+      .attr("y1", top+1+((BAR_HEIGHT-2)/2))
+      .attr("x2", left + BAR_WIDTH - 2)
+      .attr("y2", top+1+((BAR_HEIGHT-2)/2))
+      .attr("stroke", "rgba(" + LEVEL_RGB + ", " + alpha + ")")
+      .attr("stroke-width", 1) );
+}
+
+function create_radio( top, left ) {
+  svg.append("text")
+      .attr("x", left+110)
+      .attr("y", top-26)
+      .attr("fill", TEXT_COLOR)
+      .attr("text-anchor", "middle")
+      .attr("style","font-size:10pt;font-family:monospace")
+      .text("Radio");
+ 
+  svg.append("line")
+      .attr("x1", left-10)
+      .attr("y1", top-20)
+      .attr("x2", left+232)
+      .attr("y2", top-20)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+ 
+  svg.append("line")
+      .attr("x1", left-10)
+      .attr("y1", top-20)
+      .attr("x2", left-10)
+      .attr("y2", top-12)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+ 
+  svg.append("line")
+      .attr("x1", left+232)
+      .attr("y1", top-20)
+      .attr("x2", left+232)
+      .attr("y2", top-12)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+	radioAxis.push( create_radio_axis( { "top" : top, "left" : left } ) );	
+	radioAxis.push( create_radio_axis( { "top" : top, "left" : left+120 } ) );	
+}
+
+function create_radio_axis( attrs ) {
+  var top = attrs['top'];
+  var left = attrs['left'];
+  
+  // main bar rectangle
+  svg.append("rect") 
+      .attr("width", RADIO_AXIS_SIZE)
+      .attr("height", RADIO_AXIS_SIZE)
+      .attr("x", left)
+      .attr("y", top)
+      .attr("fill", BAR_BG_COLOR)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+  // center X
+  svg.append("line")
+      .attr("x1", left+(RADIO_AXIS_SIZE/2))
+      .attr("y1", top)
+      .attr("x2", left+(RADIO_AXIS_SIZE/2))
+      .attr("y2", top+RADIO_AXIS_SIZE)
+      .attr("stroke", BAR_CENTER_COLOR)
+      .attr("stroke-width", 1);
+  
+  // center X top tick
+  svg.append("line")
+      .attr("x1", left+(RADIO_AXIS_SIZE/2))
+      .attr("y1", top)
+      .attr("x2", left+(RADIO_AXIS_SIZE/2))
+      .attr("y2", top-5)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+  // center X bottom tick
+  svg.append("line")
+      .attr("x1", left+(RADIO_AXIS_SIZE/2))
+      .attr("y1", top+RADIO_AXIS_SIZE+5)
+      .attr("x2", left+(RADIO_AXIS_SIZE/2))
+      .attr("y2", top+RADIO_AXIS_SIZE)
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+  // center Y
+  svg.append("line")
+      .attr("x1", left)
+      .attr("y1", top+(RADIO_AXIS_SIZE/2))
+      .attr("x2", left+RADIO_AXIS_SIZE)
+      .attr("y2", top+(RADIO_AXIS_SIZE/2))
+      .attr("stroke", BAR_CENTER_COLOR)
+      .attr("stroke-width", 1);
+  
+  // center Y left tick
+  svg.append("line")
+      .attr("x1", left)
+      .attr("y1", top+(RADIO_AXIS_SIZE/2))
+      .attr("x2", left-5)
+      .attr("y2", top+(RADIO_AXIS_SIZE/2))
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+  // center Y right tick
+  svg.append("line")
+      .attr("x1", left+RADIO_AXIS_SIZE)
+      .attr("y1", top+(RADIO_AXIS_SIZE/2))
+      .attr("x2", left+RADIO_AXIS_SIZE+5)
+      .attr("y2", top+(RADIO_AXIS_SIZE/2))
+      .attr("stroke", LINE_COLOR)
+      .attr("stroke-width", 1);
+  
+  var radioX = svg.append("line")
+      .attr("class", "radio-axis")
+      .attr("id", "radio-axis-x")
+      .attr("x1", left+(RADIO_AXIS_SIZE/2))
+      .attr("y1", top)
+      .attr("x2", left+(RADIO_AXIS_SIZE/2))
+      .attr("y2", top+RADIO_AXIS_SIZE)
+      .attr("stroke", "rgb(" + LEVEL_RGB + ")")
+      .attr("stroke-width", 1);
+  
+  var radioY = svg.append("line")
+      .attr("class", "radio-axis")
+      .attr("id", "radio-axis-y")
+      .attr("x1", left)
+      .attr("y1", top+(RADIO_AXIS_SIZE/2))
+      .attr("x2", left+RADIO_AXIS_SIZE)
+      .attr("y2", top+(RADIO_AXIS_SIZE/2))
+      .attr("stroke", "rgb(" + LEVEL_RGB + ")")
+      .attr("stroke-width", 1);
+  
+  return {
+    "attrs": attrs,
+    "radioX" : radioX,
+    "radioY" : radioY
+  };
+}
+
+function start_data() {
+    if ( DEBUG) console.log('Connecting...');
+    var conn = new WebSocket(HD_LOGGER_URL);
+    conn.onopen = function () {
+        // do nothing
+		if ( DEBUG ) console.log('Opened...');
+    };
+    conn.onerror = function(error) {
+        console.log('ERROR: ' + error);
+    }
+    conn.onmessage = function(e) {
+      //window.dataEl.innerHTML += e.data;
+      
+      var _values = e.data.split(',');
+      var data = [];
+      _values.forEach( function( v ) {
+        data.push(parseFloat(v));
+      });
+      
+      for ( var _i = 0; _i < 6; _i++ ) {
+        var num = data[_i];
+        var bar = bars[_i];
+        
+        var val = bar['attrs']['top']+1+((BAR_HEIGHT-2)/2) - ( num / 100.0 ) * ((BAR_HEIGHT-2)/2);
+        if ( DEBUG ) console.log( '[' + _i + '] ' + num + " => " + val );
+        
+        var values = bar['values'];
+        var valuesIndex = bar['valuesIndex'];
+        var levels = bar['levels'];
+        values[valuesIndex] = val;
+        
+        for ( var i = 0, j = valuesIndex; i < MAX_BARS; i++ ) {
+          val = values[j];
+          levels[i].attr( "y1", val );
+          levels[i].attr( "y2", val );
+          j--;
+          if ( j < 0 ) j = MAX_BARS - 1;
+        }
+        valuesIndex += 1;
+        if ( valuesIndex >= MAX_BARS ) valuesIndex = 0;
+        bar['valuesIndex'] = valuesIndex;
+        
+        bar['valueText'].text(num.toFixed());
+      }
+      
+      update_radio( data );
+    }
+}
+
+function update_radio( data ) {
+  update_radio_axis( data, 6, 0 );
+  update_radio_axis( data, 8, 1 );
+}
+
+function update_radio_axis( data, dataIndex, radioIndex ) {
+  var numX = data[dataIndex];
+  var radio = radioAxis[radioIndex];
+  var valX = radio['attrs']['left']+(RADIO_AXIS_SIZE/2) - ( numX / 100.0 ) * (RADIO_AXIS_SIZE/2);
+  radio['radioX'].attr('x1', valX);
+  radio['radioX'].attr('x2', valX);
+  
+  var numY = data[dataIndex+1];
+  var valY = radio['attrs']['top']+(RADIO_AXIS_SIZE/2) - ( numY / 100.0 ) * (RADIO_AXIS_SIZE/2);
+  radio['radioY'].attr('y1', valY);
+  radio['radioY'].attr('y2', valY);
+}
+
+addEventListener("load", function() {
+    setTimeout(start, 0);
+}, false);
+</script>
+</head>
+<body style="margin:0;padding:0">
+
+
+</div>
+</body>
+</html>
