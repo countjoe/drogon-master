@@ -1,5 +1,5 @@
 /*
- * Drogon : DrogonLoggerServlet.java
+ * Drogon : DrogonEventInfo.java
  * 
  * This file is part of Drogon.
  *
@@ -20,23 +20,29 @@
  * Copyright (c) 2013 Joseph Monti All Rights Reserved, http://joemonti.org/
  */
 
-package org.joemonti.drogon;
+package org.joemonti.drogon.kernel.event;
 
-import org.eclipse.jetty.websocket.api.UpgradeRequest;
-import org.eclipse.jetty.websocket.api.UpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-
-public class DrogonLoggerServlet extends WebSocketServlet {
-    @Override
-    public void configure(WebSocketServletFactory factory) {
-        factory.getPolicy().setIdleTimeout(10000);
-        factory.setCreator(new WebSocketCreator() {
-                @Override
-                public Object createWebSocket(UpgradeRequest req, UpgradeResponse resp) {
-                    return new DrogonLoggerSocket();
-                }
-            });
+/**
+ * 
+ * 
+ * @author Joseph Monti <joe.monti@gmail.com>
+ * @version 1.0
+ */
+public class DrogonEventInfo {
+    private final long source;
+    private final Class<DrogonEventObject> eventObjectClass;
+    
+    public DrogonEventInfo( long source, Class<DrogonEventObject> eventObjectClass ) {
+        this.source = source;
+        this.eventObjectClass = eventObjectClass;
+    }
+    
+    public long getSource() {
+        return source;
+    }
+    
+    public DrogonEventObject createEventObjectInstance() 
+            throws InstantiationException, IllegalAccessException {
+        return eventObjectClass.newInstance( );
     }
 }

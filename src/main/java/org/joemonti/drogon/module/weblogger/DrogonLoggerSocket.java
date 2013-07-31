@@ -20,7 +20,7 @@
  * Copyright (c) 2013 Joseph Monti All Rights Reserved, http://joemonti.org/
  */
 
-package org.joemonti.drogon;
+package org.joemonti.drogon.module.weblogger;
 
 import java.io.IOException;
 import org.eclipse.jetty.websocket.api.Session;
