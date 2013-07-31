@@ -1,13 +1,16 @@
 drogon-master
 =============
 
-Master daemon for the Drogon Quadcopter
+Master daemon for the Drogon Quadcopter. Runs as a Java web application 
+providing high-level control and operation of the Drogon Quadcopter.
+Is intended to run in Jetty on Drogon's Raspberry Pi.
 
 
 Important
 ---------------------
 
-This project is still in very early development and thus likely not yet functional.
+This project is still in very early development and thus likely not yet 
+functional.
 
 License
 ---------------------
