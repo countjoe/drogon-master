@@ -85,7 +85,7 @@ public class DrogonEventManager {
      * @param eventObjectClass
      * @return
      */
-    public boolean registerEvent( long source, DrogonEventCommand command, Class<DrogonEventObject> eventObjectClass ) {
+    public boolean registerEvent( long source, DrogonEventCommand command, Class<? extends DrogonEventObject> eventObjectClass ) {
         DrogonEventInfo eventInfo = new DrogonEventInfo( source, eventObjectClass );
         DrogonEventInfo oldEventInfo = events.putIfAbsent( command, eventInfo );
         
@@ -168,6 +168,11 @@ public class DrogonEventManager {
         ConcurrentMap<Long,DrogonEventProcessor> processors = subscriptions.get( event.getCommand( ) );
         if ( processors != null && processors.size( ) > 0 ) {
             for ( Entry<Long,DrogonEventProcessor> entry: processors.entrySet( ) ) {
+                if ( entry.getKey( ).longValue( ) == event.getSource( ) ) {
+                    // don't sent event to source.
+                    continue;
+                }
+                
                 DrogonEventProcessor processor = entry.getValue( );
                 if ( processor.activate( event ) ) {
                     executor.execute( processor );

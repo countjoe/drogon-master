@@ -29,9 +29,15 @@ package org.joemonti.drogon.kernel.event;
  * @version 1.0
  */
 public enum DrogonEventCommand {
-    NOOP( 1 ),
-    DATA_LOG( 2 ),
-    VIDEO_FRAME( 3 );
+    GET_VERSION( 1 ),
+    
+    /* ARDUINO EVENTS */
+    ARDUINO_DEFAULTS( 2 ),
+    ARDUINO_GET_DEFAULTS( 2 ),
+    ARDUINO_DATA_LOG( 3 ),
+    
+    /* VIDEO EVENTS */
+    VIDEO_FRAME( 4 );
     
     public final int command;
     private DrogonEventCommand( int command ) {

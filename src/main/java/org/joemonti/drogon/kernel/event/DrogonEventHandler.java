@@ -26,6 +26,7 @@ package org.joemonti.drogon.kernel.event;
  * 
  * 
  * @author Joseph Monti <joe.monti@gmail.com>
+ * @version 1.0
  */
 public interface DrogonEventHandler {
     public void handle( DrogonEvent event );

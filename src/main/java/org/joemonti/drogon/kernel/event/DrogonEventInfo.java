@@ -30,9 +30,9 @@ package org.joemonti.drogon.kernel.event;
  */
 public class DrogonEventInfo {
     private final long source;
-    private final Class<DrogonEventObject> eventObjectClass;
+    private final Class<? extends DrogonEventObject> eventObjectClass;
     
-    public DrogonEventInfo( long source, Class<DrogonEventObject> eventObjectClass ) {
+    public DrogonEventInfo( long source, Class<? extends DrogonEventObject> eventObjectClass ) {
         this.source = source;
         this.eventObjectClass = eventObjectClass;
     }
