@@ -4,9 +4,12 @@
 
 <web-app>
   <display-name>Drogon Master Service</display-name>
+  <listener>
+      <listener-class>org.joemonti.drogon.kernel.DrogonMaster</listener-class>
+  </listener>
    <servlet>
       <servlet-name>DrogonLogger</servlet-name>
-      <servlet-class>org.joemonti.drogon.DrogonLoggerServlet</servlet-class>
+      <servlet-class>org.joemonti.drogon.modules.weblogger.DrogonLoggerServlet</servlet-class>
    </servlet>
    <servlet-mapping>
       <servlet-name>DrogonLogger</servlet-name>

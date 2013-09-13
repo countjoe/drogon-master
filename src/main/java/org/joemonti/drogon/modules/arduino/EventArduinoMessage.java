@@ -1,5 +1,5 @@
 /*
- * Drogon : EventDataLog.java
+ * Drogon : EventArduinoInfo.java
  * 
  * This file is part of Drogon.
  *
@@ -20,7 +20,7 @@
  * Copyright (c) 2013 Joseph Monti All Rights Reserved, http://joemonti.org/
  */
 
-package org.joemonti.drogon.module.arduino;
+package org.joemonti.drogon.modules.arduino;
 
 import org.joemonti.drogon.kernel.event.DrogonEventObject;
 
@@ -30,6 +30,26 @@ import org.joemonti.drogon.kernel.event.DrogonEventObject;
  * @author Joseph Monti <joe.monti@gmail.com>
  * @version 1.0
  */
-public class EventArduinoDataLog implements DrogonEventObject {
+public class EventArduinoMessage implements DrogonEventObject {
+    private String message;
+    
+    public EventArduinoMessage() { }
+    
+    public EventArduinoMessage( String message ) { 
+        this.message = message;
+    }
+    
+    public String getMessage() {
+        return message;
+    }
+    
+    @Override
+    public byte[] serialize() {
+        return message.getBytes( );
+    }
 
+    @Override
+    public void deserialize( byte[] bytes ) {
+        this.message = new String( bytes );
+    }
 }

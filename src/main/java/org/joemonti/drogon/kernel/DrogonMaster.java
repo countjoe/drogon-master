@@ -22,16 +22,19 @@
 
 package org.joemonti.drogon.kernel;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.joemonti.drogon.kernel.event.DrogonEventManager;
 import org.joemonti.drogon.kernel.module.DrogonModule;
-import org.joemonti.drogon.module.weblogger.WebLoggerModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,11 +47,9 @@ import org.slf4j.LoggerFactory;
 public class DrogonMaster implements ServletContextListener {
     private static final Logger logger = LoggerFactory.getLogger( DrogonMaster.class );
     
-    private static final Class<DrogonModule>[] MODULES = new Class[] {
-        WebLoggerModule.class
-    };
+    public static final int VERSION = 2;
     
-    private static Map<String ,DrogonModule> modules = new HashMap<String, DrogonModule>( );
+    private static Map<String, DrogonModule> modules = new HashMap<String, DrogonModule>( );
     
     public static DrogonModule getModule( Class<DrogonModule> clazz ) {
         return getModule( clazz.getCanonicalName( ) );
@@ -74,18 +75,45 @@ public class DrogonMaster implements ServletContextListener {
      */
     @Override
     public void contextInitialized( ServletContextEvent arg0 ) {
-        for ( Class<DrogonModule> moduleClass: MODULES ) {
-            String className = moduleClass.getCanonicalName( );
+        DrogonEventManager.getInstance( );
+        
+        try {
+            loadModules( );
+        } catch ( IOException ex ) {
+            logger.error( "Error loading modules", ex );
+        }
+    }
+    
+    private void loadModules() throws IOException {
+        InputStream in = DrogonMaster.class.getResourceAsStream( "/modules.load" );
+        if ( in == null ) {
+            throw new FileNotFoundException( "/modules.load not found" );
+        }
+        BufferedReader reader = new BufferedReader( new InputStreamReader( in ) );
+        String line;
+        while ( ( line = reader.readLine( ) ) != null ) {
+            String className = line.trim( );
+            
+            if ( className.length( ) == 0 || className.startsWith( "#" ) ) {
+                continue;
+            }
+            
             try {
+                Class<DrogonModule> moduleClass = (Class<DrogonModule>) Class.forName( className );
+                
                 DrogonModule module = moduleClass.newInstance( );
                 
                 modules.put( className, module );
+                
+                logger.info( "Loaded module: " + className );
+            } catch ( ClassNotFoundException ex ) {
+                logger.error( className + " class not found", ex );
             } catch ( InstantiationException ex ) {
                 logger.error( "Error instantiating " + className, ex );
             } catch ( IllegalAccessException ex ) {
                 logger.error( "Error accessing " + className, ex );
             }
         }
+        reader.close( );
     }
-
 }

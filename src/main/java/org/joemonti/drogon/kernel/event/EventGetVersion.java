@@ -1,5 +1,5 @@
 /*
- * Drogon : WebLoggerModule.java
+ * Drogon : EventGetVersion.java
  * 
  * This file is part of Drogon.
  *
@@ -20,9 +20,9 @@
  * Copyright (c) 2013 Joseph Monti All Rights Reserved, http://joemonti.org/
  */
 
-package org.joemonti.drogon.module.weblogger;
+package org.joemonti.drogon.kernel.event;
 
-import org.joemonti.drogon.kernel.module.DrogonModule;
+import org.joemonti.drogon.util.BytesUtil;
 
 /**
  * 
@@ -30,24 +30,34 @@ import org.joemonti.drogon.kernel.module.DrogonModule;
  * @author Joseph Monti <joe.monti@gmail.com>
  * @version 1.0
  */
-public class WebLoggerModule implements DrogonModule {
-
+public class EventGetVersion implements DrogonEventObject {
+    private long client;
+    
+    public EventGetVersion() { }
+    
+    public EventGetVersion( long client ) {
+        this.client = client;
+    }
+    
+    public long getClient() {
+        return client;
+    }
+    
     /* (non-Javadoc)
-     * @see org.joemonti.drogon.kernel.module.DrogonModule#initialize()
+     * @see org.joemonti.drogon.kernel.event.DrogonEventObject#serialize()
      */
     @Override
-    public void initialize() {
-        // TODO Auto-generated method stub
-
+    public byte[] serialize() {
+        byte[] bytes = new byte[ BytesUtil.SIZEOF_LONG ];
+        BytesUtil.writeLong( bytes, 0, client );
+        return bytes;
     }
 
     /* (non-Javadoc)
-     * @see org.joemonti.drogon.kernel.module.DrogonModule#shutdown()
+     * @see org.joemonti.drogon.kernel.event.DrogonEventObject#deserialize(byte[])
      */
     @Override
-    public void shutdown() {
-        // TODO Auto-generated method stub
-
+    public void deserialize( byte[] bytes ) {
+        client = BytesUtil.readLong( bytes, 0 );
     }
-
 }

@@ -20,21 +20,25 @@
  * Copyright (c) 2013 Joseph Monti All Rights Reserved, http://joemonti.org/
  */
 
-package org.joemonti.drogon.module.weblogger;
+package org.joemonti.drogon.modules.weblogger;
 
 import java.io.IOException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.eclipse.jetty.websocket.api.RemoteEndpoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DrogonLoggerSocket extends WebSocketAdapter {
+    private static final Logger logger = LoggerFactory.getLogger( DrogonLoggerSocket.class );
+    
     private Thread t;
     
     @Override
     public void onWebSocketConnect(Session session) {
         super.onWebSocketConnect( session );
         
-        System.out.println("Client " + session.getRemoteAddress() + " Connected");
+        logger.debug("Client " + session.getRemoteAddress() + " Connected");
         t = new Thread( new DrogonLoggerRunner() );
         t.start();
     }
@@ -46,7 +50,7 @@ public class DrogonLoggerSocket extends WebSocketAdapter {
     
     @Override
     public void onWebSocketClose(int statusCode, String reason) {
-        System.out.println("Client " + getSession().getRemoteAddress() + " Disconnected [" + statusCode + "] : " + reason);
+        logger.debug("Client " + getSession().getRemoteAddress() + " Disconnected [" + statusCode + "] : " + reason);
         super.onWebSocketClose( statusCode, reason );
     }
     
@@ -78,7 +82,7 @@ public class DrogonLoggerSocket extends WebSocketAdapter {
                 try {
                     Thread.sleep(100);
                 } catch ( InterruptedException ex ) {
-                    System.err.print("Interrupted!!\n");
+                    logger.error("Interrupted!!\n");
                     return;
                 }
             }

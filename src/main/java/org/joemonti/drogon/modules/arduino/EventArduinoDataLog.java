@@ -1,5 +1,5 @@
 /*
- * Drogon : DrogonEventCommand.java
+ * Drogon : EventDataLog.java
  * 
  * This file is part of Drogon.
  *
@@ -20,10 +20,9 @@
  * Copyright (c) 2013 Joseph Monti All Rights Reserved, http://joemonti.org/
  */
 
-package org.joemonti.drogon.kernel.event;
+package org.joemonti.drogon.modules.arduino;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.joemonti.drogon.kernel.event.DrogonEventObject;
 
 /**
  * 
@@ -31,33 +30,22 @@ import java.util.Map;
  * @author Joseph Monti <joe.monti@gmail.com>
  * @version 1.0
  */
-public enum DrogonEventCommand {
-    GET_VERSION( 1 ),
-    VERSION( 2 ),
+public class EventArduinoDataLog implements DrogonEventObject {
+    private String data;
     
-    /* ARDUINO EVENTS */
-    ARDUINO_DEFAULTS( 3 ),
-    ARDUINO_GET_DEFAULTS( 4 ),
-    ARDUINO_MESSAGE( 5 ),
-    ARDUINO_DATA_LOG( 6 ),
+    public EventArduinoDataLog() { }
     
-    /* VIDEO EVENTS */
-    VIDEO_FRAME( 7 );
-    
-    private static final Map<Integer,DrogonEventCommand> COMMANDS = new HashMap<Integer, DrogonEventCommand>();
-    
-    static {
-        for ( DrogonEventCommand dec: DrogonEventCommand.values( ) ) {
-            COMMANDS.put( dec.commandId, dec );
-        }
+    public EventArduinoDataLog( String data ) { 
+        this.data = data;
     }
     
-    public final int commandId;
-    private DrogonEventCommand( int commandId ) {
-        this.commandId = commandId;
+    @Override
+    public byte[] serialize() {
+        return data.getBytes( );
     }
-    
-    public static DrogonEventCommand get( int commandId ) {
-        return COMMANDS.get( commandId );
+
+    @Override
+    public void deserialize( byte[] bytes ) {
+        this.data = new String( bytes );
     }
 }

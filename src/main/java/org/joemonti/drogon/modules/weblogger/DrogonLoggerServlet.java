@@ -20,7 +20,7 @@
  * Copyright (c) 2013 Joseph Monti All Rights Reserved, http://joemonti.org/
  */
 
-package org.joemonti.drogon.module.weblogger;
+package org.joemonti.drogon.modules.weblogger;
 
 import org.eclipse.jetty.websocket.api.UpgradeRequest;
 import org.eclipse.jetty.websocket.api.UpgradeResponse;

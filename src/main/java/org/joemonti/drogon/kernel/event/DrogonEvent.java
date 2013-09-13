@@ -22,6 +22,8 @@
 
 package org.joemonti.drogon.kernel.event;
 
+import org.joemonti.drogon.util.BytesUtil;
+
 /**
  * 
  * 
@@ -29,8 +31,9 @@ package org.joemonti.drogon.kernel.event;
  * @version 1.0
  */
 public class DrogonEvent {
-    //private static final int SIZEOF_LONG = Long.SIZE / Byte.SIZE;
-    //private static final int SIZEOF_INT = Integer.SIZE / Byte.SIZE;
+    private static final int SOURCE_OFFSET = 0;
+    private static final int COMMAND_OFFSET = SOURCE_OFFSET + BytesUtil.SIZEOF_LONG;
+    private static final int OBJECT_OFFSET = COMMAND_OFFSET + BytesUtil.SIZEOF_INT;
     
     private final long source;
     private final DrogonEventCommand command;
@@ -42,12 +45,16 @@ public class DrogonEvent {
         this.object = object;
     }
     
-    public DrogonEvent( byte[] bytes ) {
-        // TODO
+    public DrogonEvent( byte[] bytes, DrogonEventInfo eventInfo ) throws InstantiationException, IllegalAccessException {
+        this.source = BytesUtil.readLong( bytes, SOURCE_OFFSET );
+        this.command = DrogonEventCommand.get( BytesUtil.readInt( bytes, COMMAND_OFFSET ) );
         
-        this.source = 0;
-        this.command = null;
-        this.object = null;
+        int objectLength = bytes.length - OBJECT_OFFSET;
+        byte[] objectBytes = new byte[objectLength];
+        BytesUtil.readBytes( bytes, OBJECT_OFFSET, objectBytes, 0, objectLength );
+        
+        this.object = eventInfo.createEventObjectInstance( );
+        this.object.deserialize( objectBytes );
     }
 
     public long getSource() {
@@ -63,8 +70,16 @@ public class DrogonEvent {
     }
     
     public byte[] serialize() {
-        // TODO
+        byte[] objectBytes = this.object.serialize( );
         
-        return null;
+        int length = BytesUtil.SIZEOF_LONG + BytesUtil.SIZEOF_INT + objectBytes.length;
+        
+        byte[] bytes = new byte[length];
+        
+        BytesUtil.writeLong( bytes, SOURCE_OFFSET, source );
+        BytesUtil.writeInt( bytes, COMMAND_OFFSET, command.commandId );
+        BytesUtil.writeBytes( bytes, OBJECT_OFFSET, objectBytes, 0, objectBytes.length );
+        
+        return bytes;
     }
 }

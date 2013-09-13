@@ -29,8 +29,6 @@ package org.joemonti.drogon.kernel.event;
  * @version 1.0
  */
 public interface DrogonEventObject {
-    
-    //TODO
-    //public byte[] serialize();
-    //public void deserialize(byte[] bytes);
+    public byte[] serialize();
+    public void deserialize(byte[] bytes);
 }

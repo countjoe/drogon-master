@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.joemonti.drogon.kernel.DrogonMaster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,10 +39,13 @@ import org.slf4j.LoggerFactory;
  * @author Joseph Monti <joe.monti@gmail.com>
  * @version 1.0
  */
-public class DrogonEventManager {
+public class DrogonEventManager implements DrogonEventHandler {
     private static final Logger logger = LoggerFactory.getLogger( DrogonEventManager.class );
     
     private static final int MAX_THREADS = 10;
+    
+    public static final long ANONYMOUS_CLIENT_ID = 0;
+    private static final String EVENT_CLIENT_NAME = "arduino";
     
     private static DrogonEventManager instance = new DrogonEventManager( );
     
@@ -51,6 +55,7 @@ public class DrogonEventManager {
     
     private ExecutorService executor = Executors.newFixedThreadPool( MAX_THREADS );
     
+    private long eventClientId;
     private ConcurrentMap<Long, String> clients;
     private ConcurrentMap<DrogonEventCommand, DrogonEventInfo> events;
     private ConcurrentMap<DrogonEventCommand, ConcurrentMap<Long,DrogonEventProcessor>> subscriptions;
@@ -58,10 +63,19 @@ public class DrogonEventManager {
     private AtomicInteger counter;
     
     public DrogonEventManager() {
+        this.clients = new ConcurrentHashMap<Long, String>( );
         this.events = new ConcurrentHashMap<DrogonEventCommand, DrogonEventInfo>( );
         this.subscriptions = new ConcurrentHashMap<DrogonEventCommand, ConcurrentMap<Long,DrogonEventProcessor>>( );
         
         this.counter = new AtomicInteger( );
+        
+        // register my events
+        eventClientId = registerClient( EVENT_CLIENT_NAME );
+        
+        registerEvent( ANONYMOUS_CLIENT_ID, DrogonEventCommand.GET_VERSION, EventGetVersion.class );
+        registerEvent( eventClientId, DrogonEventCommand.VERSION, EventVersion.class );
+        
+        subscribe( eventClientId, DrogonEventCommand.GET_VERSION, this );
     }
     
     /**
@@ -72,7 +86,7 @@ public class DrogonEventManager {
      */
     public long registerClient( String name ) {
         // bad random long value
-        long id = ( System.currentTimeMillis( ) * (long) ( Math.random( ) * 10000 ) ) + counter.incrementAndGet( );
+        long id = ( ( System.currentTimeMillis( ) / 1000 ) * (long) ( Math.random( ) * 10000 ) ) + counter.incrementAndGet( );
         clients.put( id, name );
         return id;
     }
@@ -221,14 +235,37 @@ public class DrogonEventManager {
             logger.warn( "No event info for command " + event.getCommand( ) );
             return false; // no event (should throw exception)
         }
+        if ( eventInfo.getSource( ) == ANONYMOUS_CLIENT_ID ) {
+            return true;
+        }
         if ( eventInfo.getSource( ) != event.getSource( ) ) {
             logger.warn( "Source mismatch for command " + event.getCommand( ) + ". Expected source " + getDisplayName( eventInfo.getSource( ) ) + " is not sending source " + getDisplayName( event.getSource( ) ) );
-            return false; // doesnt match source (should throw exception)
+            return false; // doesn't match source (should throw exception)
         }
         return true;
     }
     
     private String getDisplayName( long client ) {
         return clients.get( client ) + " [" + client + "]";
+    }
+
+    @Override
+    public void handle( DrogonEvent event ) {
+        switch ( event.getCommand( ) ) {
+        case GET_VERSION:
+            long client = ((EventGetVersion)event.getObject( )).getClient( );
+            sendVersion( client );
+            break;
+        default:
+            // nothing
+            break;
+        }
+    }
+    
+    private void sendVersion( long receiver ) {
+        DrogonEvent versionEvent = new DrogonEvent( eventClientId, 
+                DrogonEventCommand.VERSION, 
+                new EventVersion( DrogonMaster.VERSION ) );
+        send( versionEvent, receiver );
     }
 }
