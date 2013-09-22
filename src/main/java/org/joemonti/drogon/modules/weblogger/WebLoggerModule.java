@@ -22,9 +22,7 @@
 
 package org.joemonti.drogon.modules.weblogger;
 
-import org.joemonti.drogon.kernel.event.DrogonEvent;
 import org.joemonti.drogon.kernel.event.DrogonEventCommand;
-import org.joemonti.drogon.kernel.event.DrogonEventHandler;
 import org.joemonti.drogon.kernel.event.DrogonEventManager;
 import org.joemonti.drogon.kernel.module.DrogonModule;
 import org.slf4j.Logger;
@@ -36,12 +34,11 @@ import org.slf4j.LoggerFactory;
  * @author Joseph Monti <joe.monti@gmail.com>
  * @version 1.0
  */
-public class WebLoggerModule implements DrogonModule, DrogonEventHandler {
+public class WebLoggerModule implements DrogonModule {
     private static final Logger logger = LoggerFactory.getLogger( WebLoggerModule.class );
     
     private static final String EVENT_CLIENT_NAME = "web-logger";
     
-    private long eventClientId = 0;
     private DrogonEventManager eventManager = null;
     
     /* (non-Javadoc)
@@ -50,9 +47,6 @@ public class WebLoggerModule implements DrogonModule, DrogonEventHandler {
     @Override
     public void initialize() {
         eventManager = DrogonEventManager.getInstance( );
-        eventClientId = eventManager.registerClient( EVENT_CLIENT_NAME );
-        
-        eventManager.subscribe( eventClientId, DrogonEventCommand.ARDUINO_DATA_LOG, this );
     }
 
     /* (non-Javadoc)
@@ -64,7 +58,15 @@ public class WebLoggerModule implements DrogonModule, DrogonEventHandler {
 
     }
 
-    @Override
-    public void handle( DrogonEvent event ) {
+    public long subscribe( DrogonLoggerSocket socket ) {
+        long eventClientId = eventManager.registerClient( EVENT_CLIENT_NAME + "-" + socket.getSession( ).getRemoteAddress( ) );
+        
+        eventManager.subscribe( eventClientId, DrogonEventCommand.ARDUINO_DATA_LOG, socket );
+        
+        return eventClientId;
+    }
+    
+    public void unsubscribe( long eventClientId ) {
+        eventManager.unsubscribe( eventClientId, DrogonEventCommand.ARDUINO_DATA_LOG );
     }
 }

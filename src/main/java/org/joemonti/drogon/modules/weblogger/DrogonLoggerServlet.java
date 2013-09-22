@@ -31,13 +31,23 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 public class DrogonLoggerServlet extends WebSocketServlet {
     private static final long serialVersionUID = 6952823967401149476L;
     
+    private WebLoggerModule webLoggerModule;
+    
+    public void setWebLoggerModule( WebLoggerModule webLoggerModule ) {
+        this.webLoggerModule = webLoggerModule;
+    }
+    
+    public WebLoggerModule getWebLoggerModule( ) {
+        return webLoggerModule;
+    }
+    
     @Override
     public void configure(WebSocketServletFactory factory) {
         factory.getPolicy().setIdleTimeout(10000);
         factory.setCreator(new WebSocketCreator() {
                 @Override
                 public Object createWebSocket(UpgradeRequest req, UpgradeResponse resp) {
-                    return new DrogonLoggerSocket();
+                    return new DrogonLoggerSocket( webLoggerModule );
                 }
             });
     }

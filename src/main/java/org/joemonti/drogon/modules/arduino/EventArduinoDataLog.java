@@ -39,6 +39,10 @@ public class EventArduinoDataLog implements DrogonEventObject {
         this.data = data;
     }
     
+    public String getData() { 
+        return this.data;
+    }
+    
     @Override
     public byte[] serialize() {
         return data.getBytes( );

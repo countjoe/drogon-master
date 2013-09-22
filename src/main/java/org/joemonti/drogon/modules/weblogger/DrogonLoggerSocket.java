@@ -23,86 +23,61 @@
 package org.joemonti.drogon.modules.weblogger;
 
 import java.io.IOException;
+
+import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
-import org.eclipse.jetty.websocket.api.RemoteEndpoint;
+import org.joemonti.drogon.kernel.event.DrogonEvent;
+import org.joemonti.drogon.kernel.event.DrogonEventCommand;
+import org.joemonti.drogon.kernel.event.DrogonEventHandler;
+import org.joemonti.drogon.modules.arduino.EventArduinoDataLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DrogonLoggerSocket extends WebSocketAdapter {
+public class DrogonLoggerSocket extends WebSocketAdapter implements DrogonEventHandler {
     private static final Logger logger = LoggerFactory.getLogger( DrogonLoggerSocket.class );
     
-    private Thread t;
+    private WebLoggerModule webLoggerModule;
+    private long eventClientId;
+    
+    public DrogonLoggerSocket( WebLoggerModule webLoggerModule ) {
+        this.webLoggerModule = webLoggerModule;
+    }
     
     @Override
     public void onWebSocketConnect(Session session) {
         super.onWebSocketConnect( session );
         
-        logger.debug("Client " + session.getRemoteAddress() + " Connected");
-        t = new Thread( new DrogonLoggerRunner() );
-        t.start();
+        this.eventClientId = webLoggerModule.subscribe( this );
+        logger.debug("Client " + session.getRemoteAddress() + " Connected, event client " + eventClientId );
     }
     
     @Override
     public void onWebSocketError(Throwable cause) {
         cause.printStackTrace(System.err);
+        webLoggerModule.unsubscribe( eventClientId );
     }
     
     @Override
     public void onWebSocketClose(int statusCode, String reason) {
         logger.debug("Client " + getSession().getRemoteAddress() + " Disconnected [" + statusCode + "] : " + reason);
+        webLoggerModule.unsubscribe( eventClientId );
         super.onWebSocketClose( statusCode, reason );
     }
     
-    class DrogonLoggerRunner implements Runnable {
-        public void run() {
-            RemoteEndpoint remote = getSession().getRemote();
-            
-            final int VALUES = 10;
-            ValueTracker values[] = new ValueTracker[VALUES];
-            for ( int i = 0; i < VALUES; i++ ) {
-                values[i] = new ValueTracker();
-            }
-             
-            while ( isConnected() ) {
-                StringBuilder sb = new StringBuilder();
-                for ( int i = 0; i < VALUES; i++ ) {
-                    values[i].update();
-                    if ( i > 0 ) sb.append(",");
-                    sb.append( String.format("%.4f", values[i].value) );
-                }
-                
-                try {
-                    remote.sendString( sb.toString() );
-                } catch ( IOException ex ) {
-                    ex.printStackTrace( System.err );
-                    return;
-                }
-                
-                try {
-                    Thread.sleep(100);
-                } catch ( InterruptedException ex ) {
-                    logger.error("Interrupted!!\n");
-                    return;
-                }
-            }
+    @Override
+    public void handle( DrogonEvent event ) {
+        if ( getSession( ) == null || !getSession( ).isOpen( ) ) {
+            webLoggerModule.unsubscribe( eventClientId );
         }
-    }
-    
-    static class ValueTracker {
-        private double value = 0.0;
-        double lastValue = 0.0;
-        public void update() {
-            double inc = Math.random() * 10;
-            if ( value < lastValue ) {
-                inc *= -1;
+        
+        if ( event.getCommand( ) == DrogonEventCommand.ARDUINO_DATA_LOG ) {
+            RemoteEndpoint remote = getSession().getRemote();
+            try {
+                remote.sendString( ((EventArduinoDataLog)event.getObject( )).getData( ) );
+            } catch ( IOException ex ) {
+                logger.error( "Error sending data log", ex );
             }
-            if ( ( ( ( value < lastValue ) && value < 0 ) || ( ( value > lastValue ) && value > 0 ) ) && 
-                    Math.random() <= Math.abs( ( value + inc ) / 100.0 ) ) {
-                inc *= -1;
-            }
-            lastValue = value;
-            value += inc;
         }
     }
 }
