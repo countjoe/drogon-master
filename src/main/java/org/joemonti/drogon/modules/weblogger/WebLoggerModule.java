@@ -47,6 +47,8 @@ public class WebLoggerModule implements DrogonModule {
     @Override
     public void initialize() {
         eventManager = DrogonEventManager.getInstance( );
+        
+        DrogonLoggerServlet.setWebLoggerModule( this );
     }
 
     /* (non-Javadoc)
@@ -59,7 +61,7 @@ public class WebLoggerModule implements DrogonModule {
     }
 
     public long subscribe( DrogonLoggerSocket socket ) {
-        long eventClientId = eventManager.registerClient( EVENT_CLIENT_NAME + "-" + socket.getSession( ).getRemoteAddress( ) );
+        long eventClientId = eventManager.registerClient( EVENT_CLIENT_NAME + "-" + socket.getSession( ).getRemoteAddress( ).toString( ) );
         
         eventManager.subscribe( eventClientId, DrogonEventCommand.ARDUINO_DATA_LOG, socket );
         

@@ -1,2 +1,3 @@
-org.joemonti.drogon.modules.arduino.DrogonArduinoModule
+#org.joemonti.drogon.modules.arduino.DrogonArduinoModule
+org.joemonti.drogon.modules.arduino.ArduinoSimulatorModule
 org.joemonti.drogon.modules.weblogger.WebLoggerModule

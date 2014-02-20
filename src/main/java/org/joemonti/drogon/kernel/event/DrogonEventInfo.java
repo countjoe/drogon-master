@@ -30,10 +30,14 @@ package org.joemonti.drogon.kernel.event;
  */
 public class DrogonEventInfo {
     private final long source;
-    private final Class<? extends DrogonEventObject> eventObjectClass;
+    private final short id;
+    private final String name;
+    private final Class<? extends DrogonEventData> eventObjectClass;
     
-    public DrogonEventInfo( long source, Class<? extends DrogonEventObject> eventObjectClass ) {
+    public DrogonEventInfo( long source, short id, String name, Class<? extends DrogonEventData> eventObjectClass ) {
         this.source = source;
+        this.id = id;
+        this.name = name;
         this.eventObjectClass = eventObjectClass;
     }
     
@@ -41,7 +45,15 @@ public class DrogonEventInfo {
         return source;
     }
     
-    public DrogonEventObject createEventObjectInstance() 
+    public short getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public DrogonEventData createEventObjectInstance() 
             throws InstantiationException, IllegalAccessException {
         return eventObjectClass.newInstance( );
     }

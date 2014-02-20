@@ -60,6 +60,11 @@
       <artifactId>rxtx</artifactId>
       <version>2.1.7</version>
     </dependency>
+    <dependency>
+	  <groupId>com.google.protobuf</groupId>
+	  <artifactId>protobuf-java</artifactId>
+	  <version>2.5.0</version>
+	</dependency>
   </dependencies>
   <build>
     <finalName>drogon-master</finalName>

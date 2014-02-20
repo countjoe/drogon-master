@@ -31,13 +31,13 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 public class DrogonLoggerServlet extends WebSocketServlet {
     private static final long serialVersionUID = 6952823967401149476L;
     
-    private WebLoggerModule webLoggerModule;
+    private static WebLoggerModule webLoggerModule;
     
-    public void setWebLoggerModule( WebLoggerModule webLoggerModule ) {
-        this.webLoggerModule = webLoggerModule;
+    public static void setWebLoggerModule( WebLoggerModule webLoggerModule ) {
+    	DrogonLoggerServlet.webLoggerModule = webLoggerModule;
     }
     
-    public WebLoggerModule getWebLoggerModule( ) {
+    public static WebLoggerModule getWebLoggerModule( ) {
         return webLoggerModule;
     }
     

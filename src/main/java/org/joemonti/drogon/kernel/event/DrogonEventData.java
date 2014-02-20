@@ -1,5 +1,5 @@
 /*
- * Drogon : DrogonEventCommand.java
+ * Drogon : DrogonEventObject.java
  * 
  * This file is part of Drogon.
  *
@@ -22,42 +22,13 @@
 
 package org.joemonti.drogon.kernel.event;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * 
  * 
  * @author Joseph Monti <joe.monti@gmail.com>
  * @version 1.0
  */
-public enum DrogonEventCommand {
-    GET_VERSION( 1 ),
-    VERSION( 2 ),
-    
-    /* ARDUINO EVENTS */
-    ARDUINO_DEFAULTS( 3 ),
-    ARDUINO_GET_DEFAULTS( 4 ),
-    ARDUINO_MESSAGE( 5 ),
-    ARDUINO_DATA_LOG( 6 ),
-    
-    /* VIDEO EVENTS */
-    VIDEO_FRAME( 7 );
-    
-    private static final Map<Integer,DrogonEventCommand> COMMANDS = new HashMap<Integer, DrogonEventCommand>();
-    
-    static {
-        for ( DrogonEventCommand dec: DrogonEventCommand.values( ) ) {
-            COMMANDS.put( dec.commandId, dec );
-        }
-    }
-    
-    public final int commandId;
-    private DrogonEventCommand( int commandId ) {
-        this.commandId = commandId;
-    }
-    
-    public static DrogonEventCommand get( int commandId ) {
-        return COMMANDS.get( commandId );
-    }
+public interface DrogonEventData {
+    public byte[] serialize();
+    public void deserialize(byte[] bytes) throws DrogonEventSerializationException;
 }

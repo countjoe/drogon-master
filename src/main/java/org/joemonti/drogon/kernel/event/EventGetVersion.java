@@ -30,7 +30,9 @@ import org.joemonti.drogon.util.BytesUtil;
  * @author Joseph Monti <joe.monti@gmail.com>
  * @version 1.0
  */
-public class EventGetVersion implements DrogonEventObject {
+public class EventGetVersion implements DrogonEventData {
+    public static final String EVENT_NAME = "drogon.getVersion";
+    
     private long client;
     
     public EventGetVersion() { }

@@ -35,6 +35,7 @@ public class BytesUtil {
     
     public static final int SIZEOF_LONG = Long.SIZE / Byte.SIZE;
     public static final int SIZEOF_INT = Integer.SIZE / Byte.SIZE;
+    public static final int SIZEOF_SHORT = Short.SIZE / Byte.SIZE;
     
     public static long readLong( byte[] bytes, int offset ) {
         if ( offset < 0 || ( offset + SIZEOF_LONG ) > bytes.length ) {
@@ -82,6 +83,30 @@ public class BytesUtil {
         }
         bytes[offset] = (byte) value;
         return offset + SIZEOF_INT;
+    }
+    
+    public static short readShort( byte[] bytes, int offset ) {
+        if ( offset < 0 || ( offset + SIZEOF_SHORT ) > bytes.length ) {
+            throw new IllegalArgumentException( "Invalid offset " + offset + " for bytes length " + bytes.length );
+        }
+        short value = 0;
+        for ( int i = offset; i < ( offset + SIZEOF_INT ); i++ ) {
+            value <<= 8;
+            value ^= bytes[i] & 0xFF;
+        }
+        return value;
+    }
+    
+    public static int writeShort( byte[] bytes, int offset, short value ) {
+        if ( offset < 0 || ( offset + SIZEOF_SHORT ) > bytes.length ) {
+            throw new IllegalArgumentException( "Invalid offset " + offset + " for bytes length " + bytes.length );
+        }
+        for ( int i = offset + ( SIZEOF_SHORT - 1 ); i > offset; i-- ) {
+            bytes[i] = (byte) value;
+            value >>>= 8;
+        }
+        bytes[offset] = (byte) value;
+        return offset + SIZEOF_SHORT;
     }
     
     public static void readBytes( byte[] bytes, int offset, byte[] dst, int dstOffset, int length ) {

@@ -34,9 +34,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.joemonti.drogon.kernel.event.DrogonEvent;
-import org.joemonti.drogon.kernel.event.DrogonEventCommand;
+import org.joemonti.drogon.kernel.event.DrogonEventData;
 import org.joemonti.drogon.kernel.event.DrogonEventManager;
-import org.joemonti.drogon.kernel.event.DrogonEventObject;
 import org.joemonti.drogon.kernel.module.DrogonModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +53,11 @@ public class DrogonArduinoModule implements DrogonModule {
     private static final String PORT_NAME = "/dev/ttyACM0";
     private static final int BAUD_RATE = 9600;
     
+    private static final char ARDUINO_COMMAND_DEBUG = 'D';
+    private static final char ARDUINO_COMMAND_LOG = 'L';
+    private static final char ARDUINO_COMMAND_ARM = 'A';
+    private static final char ARDUINO_COMMAND_MOTORS = 'M';
+    
     private long eventClientId = 0;
     private DrogonEventManager eventManager = null;
     
@@ -67,8 +71,8 @@ public class DrogonArduinoModule implements DrogonModule {
     public void initialize() {
         eventManager = DrogonEventManager.getInstance( );
         eventClientId = eventManager.registerClient( EVENT_CLIENT_NAME );
-        eventManager.registerEvent( eventClientId, DrogonEventCommand.ARDUINO_MESSAGE, EventArduinoMessage.class );
-        eventManager.registerEvent( eventClientId, DrogonEventCommand.ARDUINO_DATA_LOG, EventArduinoDataLog.class );
+        eventManager.registerEvent( eventClientId, EventArduinoMessage.EVENT_NAME, EventArduinoMessage.class );
+        eventManager.registerEvent( eventClientId, EventArduinoDataLog.EVENT_NAME, EventArduinoDataLog.class );
         
         try {
             int timeout = 2000;
@@ -113,6 +117,16 @@ public class DrogonArduinoModule implements DrogonModule {
         }
     }
     
+    public void setMotors( double value )
+    {
+        
+    }
+    
+    public void arm( boolean armed )
+    {
+        
+    }
+    
     class ArduinoReader extends Thread {
         private InputStream is;
         
@@ -144,38 +158,31 @@ public class DrogonArduinoModule implements DrogonModule {
         }
         
         private void parseLine( String line ) {
-            int firstTab = line.indexOf( '\t' );
-            if ( firstTab >= 0 ) {
-                String firstPart = line.substring( 0, firstTab );
-                try {
-                    int commandId = Integer.parseInt( firstPart );
-                    
-                    DrogonEventCommand command = DrogonEventCommand.get( commandId );
-                    
-                    if ( command == null ) {
-                        logger.warn( "Command not found for command id: " + commandId );
-                    } else {
-                        DrogonEventObject object = null;
-                        
-                        switch ( command ) {
-                        case ARDUINO_MESSAGE:
-                            object = new EventArduinoDataLog( line.substring( firstTab + 1 ) );
-                            break;
-                        case ARDUINO_DATA_LOG:
-                            object = new EventArduinoMessage( line.substring( firstTab + 1 ) );
-                            break;
-                        default:
-                            logger.warn( "Command not supported: " + command );
-                            return;
-                        }
-                        
-                        DrogonEvent event = new DrogonEvent( eventClientId, command, object );
-                        eventManager.send( event );
-                    }
-                } catch ( NumberFormatException ex ) {
-                    logger.warn("Invalid number for command id: " + firstPart );
-                }
+            if ( line.length( ) < 3 ) return;
+            
+            char firstChar = line.charAt( 0 );
+            
+            if ( line.charAt( 1 ) != '\t' ) return;
+            
+            DrogonEventData object = null;
+            String command = null;
+            
+            switch ( firstChar )
+            {
+            case ARDUINO_COMMAND_DEBUG:
+                object = new EventArduinoMessage( line.substring( 1 ) );
+                command = EventArduinoMessage.EVENT_NAME;
+                break;
+            case ARDUINO_COMMAND_LOG:
+                object = new EventArduinoDataLog( line.substring( 1 ) );
+                command = EventArduinoDataLog.EVENT_NAME;
+                break;
+            default:
+                logger.warn( "Command not supported: " + line );
             }
+            
+            DrogonEvent event = new DrogonEvent( eventClientId, command, object );
+            eventManager.send( event );
         }
     }
 }

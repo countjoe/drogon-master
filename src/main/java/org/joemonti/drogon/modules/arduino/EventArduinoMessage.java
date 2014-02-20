@@ -22,7 +22,7 @@
 
 package org.joemonti.drogon.modules.arduino;
 
-import org.joemonti.drogon.kernel.event.DrogonEventObject;
+import org.joemonti.drogon.kernel.event.DrogonEventData;
 
 /**
  * 
@@ -30,7 +30,8 @@ import org.joemonti.drogon.kernel.event.DrogonEventObject;
  * @author Joseph Monti <joe.monti@gmail.com>
  * @version 1.0
  */
-public class EventArduinoMessage implements DrogonEventObject {
+public class EventArduinoMessage implements DrogonEventData {
+    public static final String EVENT_NAME = "arduino.debug";
     private String message;
     
     public EventArduinoMessage() { }
