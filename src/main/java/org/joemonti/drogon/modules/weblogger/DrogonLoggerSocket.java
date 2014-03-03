@@ -28,7 +28,6 @@ import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.joemonti.drogon.kernel.event.DrogonEvent;
-import org.joemonti.drogon.kernel.event.DrogonEventCommand;
 import org.joemonti.drogon.kernel.event.DrogonEventHandler;
 import org.joemonti.drogon.modules.arduino.EventArduinoDataLog;
 import org.slf4j.Logger;
@@ -71,10 +70,10 @@ public class DrogonLoggerSocket extends WebSocketAdapter implements DrogonEventH
             webLoggerModule.unsubscribe( eventClientId );
         }
         
-        if ( event.getCommand( ) == DrogonEventCommand.ARDUINO_DATA_LOG ) {
+        if ( EventArduinoDataLog.EVENT_NAME.equals( event.getName( ) ) ) {
             RemoteEndpoint remote = getSession().getRemote();
             try {
-                remote.sendString( ((EventArduinoDataLog)event.getObject( )).getData( ) );
+                remote.sendString( ((EventArduinoDataLog)event.getData( )).getData( ) );
             } catch ( IOException ex ) {
                 logger.error( "Error sending data log", ex );
             }

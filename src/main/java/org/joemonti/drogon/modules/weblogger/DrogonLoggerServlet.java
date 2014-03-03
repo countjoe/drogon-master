@@ -38,7 +38,7 @@ public class DrogonLoggerServlet extends WebSocketServlet {
     }
     
     public static WebLoggerModule getWebLoggerModule( ) {
-        return webLoggerModule;
+        return DrogonLoggerServlet.webLoggerModule;
     }
     
     @Override
@@ -47,7 +47,7 @@ public class DrogonLoggerServlet extends WebSocketServlet {
         factory.setCreator(new WebSocketCreator() {
                 @Override
                 public Object createWebSocket(UpgradeRequest req, UpgradeResponse resp) {
-                    return new DrogonLoggerSocket( webLoggerModule );
+                    return new DrogonLoggerSocket( getWebLoggerModule( ) );
                 }
             });
     }

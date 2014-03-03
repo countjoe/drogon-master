@@ -255,7 +255,7 @@ public class DrogonEventManager implements DrogonEventHandler {
 
     @Override
     public void handle( DrogonEvent event ) {
-        if ( EVENT_GET_VERSION.equals( event.getName( ) ) ) {
+        if ( EventGetVersion.EVENT_NAME.equals( event.getName( ) ) ) {
             long client = ((EventGetVersion)event.getData( )).getClient( );
             sendVersion( client );
         }
@@ -263,7 +263,7 @@ public class DrogonEventManager implements DrogonEventHandler {
     
     private void sendVersion( long receiver ) {
         DrogonEvent versionEvent = new DrogonEvent( eventClientId, 
-                EVENT_GET_VERSION, 
+                EventVersion.EVENT_NAME, 
                 new EventVersion( DrogonMaster.VERSION ) );
         send( versionEvent, receiver );
     }

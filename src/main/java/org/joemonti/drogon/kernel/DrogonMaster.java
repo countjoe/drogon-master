@@ -103,6 +103,8 @@ public class DrogonMaster implements ServletContextListener {
                 
                 DrogonModule module = moduleClass.newInstance( );
                 
+                module.initialize( );
+                
                 modules.put( className, module );
                 
                 logger.info( "Loaded module: " + className );

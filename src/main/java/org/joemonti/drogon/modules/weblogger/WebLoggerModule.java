@@ -22,9 +22,9 @@
 
 package org.joemonti.drogon.modules.weblogger;
 
-import org.joemonti.drogon.kernel.event.DrogonEventCommand;
 import org.joemonti.drogon.kernel.event.DrogonEventManager;
 import org.joemonti.drogon.kernel.module.DrogonModule;
+import org.joemonti.drogon.modules.arduino.EventArduinoDataLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,12 +63,12 @@ public class WebLoggerModule implements DrogonModule {
     public long subscribe( DrogonLoggerSocket socket ) {
         long eventClientId = eventManager.registerClient( EVENT_CLIENT_NAME + "-" + socket.getSession( ).getRemoteAddress( ).toString( ) );
         
-        eventManager.subscribe( eventClientId, DrogonEventCommand.ARDUINO_DATA_LOG, socket );
+        eventManager.subscribe( eventClientId, EventArduinoDataLog.EVENT_NAME, socket );
         
         return eventClientId;
     }
     
     public void unsubscribe( long eventClientId ) {
-        eventManager.unsubscribe( eventClientId, DrogonEventCommand.ARDUINO_DATA_LOG );
+        eventManager.unsubscribe( eventClientId, EventArduinoDataLog.EVENT_NAME );
     }
 }

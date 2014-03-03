@@ -6,7 +6,7 @@
 <script type="text/javascript">
 var HD_LOGGER_URL = "ws://" + location.host + "/drogon-master/logger";
 
-var DEBUG=false;
+var DEBUG=true;
 
 var WIDTH = 1024;
 var HEIGHT = 600;
@@ -52,10 +52,10 @@ function start_draw() {
       .attr("stroke", "#273341")
       .attr("stroke-width", 2);
   
-  create_3axis( "Gyroscope", 50, 20 );
-  create_3axis( "Accelerometer", 50, 180 );
+  create_3axis( "Accelerometer", 50, 20 );
+  create_3axis( "Gyroscope", 50, 180 );
 
-  create_radio( 50, 340 );
+  //create_radio( 50, 340 );
 }
 
 function create_3axis( title, top, left ) {
@@ -373,14 +373,14 @@ function start_data() {
     conn.onmessage = function(e) {
       //window.dataEl.innerHTML += e.data;
       
-      var _values = e.data.split(',');
+      var _values = e.data.split('\t');
       var data = [];
       _values.forEach( function( v ) {
         data.push(parseFloat(v));
       });
       
       for ( var _i = 0; _i < 6; _i++ ) {
-        var num = data[_i];
+        var num = data[_i+2];
         var bar = bars[_i];
         
         var val = bar['attrs']['top']+1+((BAR_HEIGHT-2)/2) - ( num / 100.0 ) * ((BAR_HEIGHT-2)/2);
@@ -405,7 +405,7 @@ function start_data() {
         bar['valueText'].text(num.toFixed());
       }
       
-      update_radio( data );
+      //update_radio( data );
     }
 }
 

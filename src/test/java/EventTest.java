@@ -20,13 +20,12 @@
  * Copyright (c) 2013 Joseph Monti All Rights Reserved, http://joemonti.org/
  */
 
+import junit.framework.TestCase;
+
 import org.joemonti.drogon.kernel.event.DrogonEvent;
-import org.joemonti.drogon.kernel.event.DrogonEventCommand;
 import org.joemonti.drogon.kernel.event.DrogonEventHandler;
 import org.joemonti.drogon.kernel.event.DrogonEventManager;
 import org.joemonti.drogon.modules.arduino.EventArduinoMessage;
-
-import junit.framework.TestCase;
 
 
 /**
@@ -40,17 +39,17 @@ public class EventTest extends TestCase {
         DrogonEventManager eventManager = DrogonEventManager.getInstance( );
         
         long eventClientId = eventManager.registerClient( "test-client" );
-        eventManager.registerEvent( eventClientId, DrogonEventCommand.ARDUINO_MESSAGE, EventArduinoMessage.class );
+        eventManager.registerEvent( eventClientId, EventArduinoMessage.EVENT_NAME, EventArduinoMessage.class );
         
         TestEventHandler testHander = new TestEventHandler( );
         
         long handlerClientId = eventManager.registerClient( "handler-client" );
         
-        eventManager.subscribe( handlerClientId, DrogonEventCommand.ARDUINO_MESSAGE, testHander );
+        eventManager.subscribe( handlerClientId, EventArduinoMessage.EVENT_NAME, testHander );
         
         String expected = "hello world";
         EventArduinoMessage object = new EventArduinoMessage( expected );
-        DrogonEvent event = new DrogonEvent( eventClientId, DrogonEventCommand.ARDUINO_MESSAGE, object );
+        DrogonEvent event = new DrogonEvent( eventClientId, EventArduinoMessage.EVENT_NAME, object );
         
         eventManager.send( event );
         
@@ -66,7 +65,7 @@ public class EventTest extends TestCase {
         
         @Override
         public void handle( DrogonEvent event ) {
-            msg = ((EventArduinoMessage)event.getObject( )).getMessage( );
+            msg = ((EventArduinoMessage)event.getData( )).getMessage( );
         }
     }
 }

@@ -170,11 +170,11 @@ public class DrogonArduinoModule implements DrogonModule {
             switch ( firstChar )
             {
             case ARDUINO_COMMAND_DEBUG:
-                object = new EventArduinoMessage( line.substring( 1 ) );
+                object = new EventArduinoMessage( line.substring( 2 ) );
                 command = EventArduinoMessage.EVENT_NAME;
                 break;
             case ARDUINO_COMMAND_LOG:
-                object = new EventArduinoDataLog( line.substring( 1 ) );
+                object = new EventArduinoDataLog( line.substring( 2 ) );
                 command = EventArduinoDataLog.EVENT_NAME;
                 break;
             default:
