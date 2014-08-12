@@ -35,9 +35,32 @@ public class EventArduinoDataLog implements DrogonEventData {
     
     private String data;
     
+    private int timestamp;
+    private int lastRunDuration;
+    private double[] accelerometer;
+    private double[] gyroscope;
+    private double[] motorAdjust;
+    private double[] rotation;
+    private double[] pidError;
+    
     public EventArduinoDataLog() { }
     
     public EventArduinoDataLog( String data ) { 
+        this.setData( data );
+    }
+    
+    private void setData( String data ) {
+        String[] parts = data.split("\t");
+        
+        timestamp = Integer.parseInt( parts[0] );
+        lastRunDuration = Integer.parseInt( parts[1] );
+        
+        accelerometer = parseDoubleArray( parts, 2, 3 );
+        gyroscope = parseDoubleArray( parts, 5, 3 );
+        motorAdjust = parseDoubleArray( parts, 8, 4 );
+        rotation = parseDoubleArray( parts, 12, 2 );
+        pidError = parseDoubleArray( parts, 14, 2 );
+        
         this.data = data;
     }
     
@@ -45,13 +68,77 @@ public class EventArduinoDataLog implements DrogonEventData {
         return this.data;
     }
     
+    public int getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp( int timestamp ) {
+        this.timestamp = timestamp;
+    }
+
+    public int getLastRunDuration() {
+        return lastRunDuration;
+    }
+
+    public void setLastRunDuration( int lastRunDuration ) {
+        this.lastRunDuration = lastRunDuration;
+    }
+
+    public double[] getAccelerometer() {
+        return accelerometer;
+    }
+
+    public void setAccelerometer( double[] accelerometer ) {
+        this.accelerometer = accelerometer;
+    }
+
+    public double[] getGyroscope() {
+        return gyroscope;
+    }
+
+    public void setGyroscope( double[] gyroscope ) {
+        this.gyroscope = gyroscope;
+    }
+
+    public double[] getMotorAdjust() {
+        return motorAdjust;
+    }
+
+    public void setMotorAdjust( double[] motorAdjust ) {
+        this.motorAdjust = motorAdjust;
+    }
+
+    public double[] getRotation() {
+        return rotation;
+    }
+
+    public void setRotation( double[] rotation ) {
+        this.rotation = rotation;
+    }
+
+    public double[] getPidError() {
+        return pidError;
+    }
+
+    public void setPidError( double[] pidError ) {
+        this.pidError = pidError;
+    }
+    
     @Override
     public byte[] serialize() {
         return data.getBytes( );
     }
-
+    
     @Override
     public void deserialize( byte[] bytes ) {
-        this.data = new String( bytes );
+        this.setData( new String( bytes ) );
+    }
+    
+    private double[] parseDoubleArray( String[] parts, int start, int length ) {
+        double[] d = new double[length];
+        for ( int i = 0; i < length; i++ ) {
+            d[i] = Double.parseDouble( parts[start+i] );
+        }
+        return d;
     }
 }

@@ -32,6 +32,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 
 import org.joemonti.drogon.kernel.event.DrogonEvent;
 import org.joemonti.drogon.kernel.event.DrogonEventData;
@@ -57,11 +58,13 @@ public class DrogonArduinoModule implements DrogonModule {
     private static final char ARDUINO_COMMAND_LOG = 'L';
     private static final char ARDUINO_COMMAND_ARM = 'A';
     private static final char ARDUINO_COMMAND_MOTORS = 'M';
+    private static final char ARDUINO_SEPARATOR = '\t';
     
     private long eventClientId = 0;
     private DrogonEventManager eventManager = null;
     
     private SerialPort serialPort;
+    private OutputStream out;
     private ArduinoReader arduinoReader;
     
     /* (non-Javadoc)
@@ -87,6 +90,7 @@ public class DrogonArduinoModule implements DrogonModule {
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE );
             
+            out = serialPort.getOutputStream( );
             arduinoReader = new ArduinoReader( serialPort.getInputStream( ) );
         } catch ( NoSuchPortException e ) {
             // TODO Auto-generated catch block
@@ -109,7 +113,7 @@ public class DrogonArduinoModule implements DrogonModule {
     @Override
     public void shutdown() {
         if ( arduinoReader != null && arduinoReader.isAlive( ) ) {
-            arduinoReader.interrupt( );
+            arduinoReader.close();
         }
         
         if ( serialPort != null ) {
@@ -117,31 +121,48 @@ public class DrogonArduinoModule implements DrogonModule {
         }
     }
     
-    public void setMotors( double value )
+    public void setMotors( double value ) throws IOException
     {
+        StringBuilder sb = new StringBuilder( );
+        sb.append( ARDUINO_COMMAND_MOTORS );
+        sb.append( ARDUINO_SEPARATOR );
+        sb.append( value );
         
+        out.write( sb.toString( ).getBytes( ) );
+        out.flush( );
     }
     
-    public void arm( boolean armed )
+    public void arm( boolean armed ) throws IOException
     {
+        StringBuilder sb = new StringBuilder( );
+        sb.append( ARDUINO_COMMAND_ARM );
         
+        out.write( sb.toString( ).getBytes( ) );
+        out.flush( );
     }
     
     class ArduinoReader extends Thread {
         private InputStream is;
+        private volatile boolean running;
         
-        public ArduinoReader( InputStream is ) { 
+        ArduinoReader( InputStream is ) { 
             this.is = is;
+        }
+         
+        void close() {
+            running = false;
         }
         
         @Override
         public void run() {
+            running = true;
+            
             // read data....
             BufferedReader reader = new BufferedReader( new InputStreamReader( is ) );
             
             String line;
             try {
-                while ( ( line = reader.readLine( ) ) != null && !isInterrupted( )  ) {
+                while ( running && ( line = reader.readLine( ) ) != null ) {
                     logger.debug( "ARDUINO LINE: " + line );
                     
                     parseLine( line );
