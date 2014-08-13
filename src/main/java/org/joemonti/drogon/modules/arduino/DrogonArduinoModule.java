@@ -121,23 +121,26 @@ public class DrogonArduinoModule implements DrogonModule {
         }
     }
     
-    public void setMotors( double value ) throws IOException
-    {
+    public void setMotors( double value ) throws IOException {
         StringBuilder sb = new StringBuilder( );
         sb.append( ARDUINO_COMMAND_MOTORS );
         sb.append( ARDUINO_SEPARATOR );
         sb.append( value );
         
-        out.write( sb.toString( ).getBytes( ) );
-        out.flush( );
+        write( sb.toString( ) );
     }
     
-    public void arm( boolean armed ) throws IOException
-    {
+    public void arm( boolean armed ) throws IOException {
         StringBuilder sb = new StringBuilder( );
         sb.append( ARDUINO_COMMAND_ARM );
         
-        out.write( sb.toString( ).getBytes( ) );
+        write( sb.toString( ) );
+    }
+    
+    private void write( String msg ) throws IOException {
+        logger.debug( "SEND: " + msg );
+        
+        out.write( msg.getBytes( ) );
         out.flush( );
     }
     
@@ -180,6 +183,8 @@ public class DrogonArduinoModule implements DrogonModule {
         
         private void parseLine( String line ) {
             if ( line.length( ) < 3 ) return;
+            
+            logger.debug("RECEIVE: " + line);
             
             char firstChar = line.charAt( 0 );
             

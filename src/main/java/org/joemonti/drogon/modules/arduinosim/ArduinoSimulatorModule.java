@@ -21,6 +21,8 @@
  */
 package org.joemonti.drogon.modules.arduinosim;
 
+import javax.print.attribute.standard.PDLOverrideSupported;
+
 import org.joemonti.drogon.kernel.event.DrogonEvent;
 import org.joemonti.drogon.kernel.event.DrogonEventData;
 import org.joemonti.drogon.kernel.event.DrogonEventManager;
@@ -72,6 +74,10 @@ public class ArduinoSimulatorModule implements DrogonModule {
             ValueTracker[] gyro = ValueTracker.init(3);
             ValueTracker[] motor = ValueTracker.init(4);
             ValueTracker[] position = ValueTracker.init(2);
+            ValueTracker[] pidErr = ValueTracker.init(2);
+            
+            int t = 0;
+            long lastTime = System.currentTimeMillis( );
             
             while ( true ) {
                 try {
@@ -84,11 +90,12 @@ public class ArduinoSimulatorModule implements DrogonModule {
                 ValueTracker.update( gyro );
                 ValueTracker.update( motor );
                 ValueTracker.update( position );
+                ValueTracker.update( pidErr );
                 
                 StringBuilder dataBuilder = new StringBuilder( );
-                dataBuilder.append( System.currentTimeMillis( ) );
+                dataBuilder.append( t++ );
                 dataBuilder.append( '\t' );
-                dataBuilder.append( 0 );
+                dataBuilder.append( System.currentTimeMillis( ) - lastTime );
                 dataBuilder.append( '\t' );
                 dataBuilder.append( accel[0] );
                 dataBuilder.append( '\t' );
@@ -113,8 +120,14 @@ public class ArduinoSimulatorModule implements DrogonModule {
                 dataBuilder.append( position[0] );
                 dataBuilder.append( '\t' );
                 dataBuilder.append( position[1] );
+                dataBuilder.append( '\t' );
+                dataBuilder.append( pidErr[0] );
+                dataBuilder.append( '\t' );
+                dataBuilder.append( pidErr[1] );
                 
                 String data = dataBuilder.toString( );
+                
+                System.out.println( data );
                 
                 DrogonEventData object = new EventArduinoDataLog( data );
                 
@@ -124,6 +137,8 @@ public class ArduinoSimulatorModule implements DrogonModule {
                         object );
                 
                 eventManager.send( event );
+                
+                lastTime = System.currentTimeMillis( );
             }
         }
         
